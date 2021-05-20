@@ -37,11 +37,8 @@ func NewFactory() component.ProcessorFactory {
 
 func createDefaultConfig() config.Processor {
 	return &Config{
-		ProcessorSettings: config.ProcessorSettings{
-			TypeVal: typeStr,
-			NameVal: typeStr,
-		},
-		MetricsExporter: "",
+		ProcessorSettings: config.NewProcessorSettings(config.NewID(typeStr)),
+		MetricsExporter:   "",
 	}
 }
 

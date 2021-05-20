@@ -84,10 +84,9 @@ func newProcessor(ctx context.Context, logger *zap.Logger, config config.Exporte
 	}
 }
 
-// GetCapabilities implements the component.Processor interface.
-func (tp *traceMetricsProcessor) GetCapabilities() component.ProcessorCapabilities {
+func (tp *traceMetricsProcessor) Capabilities() consumer.Capabilities {
 	tp.logger.Info("GetCapabilities for traceMetricsProcessor")
-	return component.ProcessorCapabilities{MutatesConsumedData: false}
+	return consumer.Capabilities{MutatesData: false}
 }
 
 // Shutdown implements the component.Component interface.
@@ -128,10 +127,6 @@ func (tp *traceMetricsProcessor) Start(_ context.Context, host component.Host) e
 
 func (tp *traceMetricsProcessor) ConsumeTraces(ctx context.Context, traces pdata.Traces) error {
 	tp.processTraces(traces)
-	// Forward trace data unmodified.
-	if err := tp.nextConsumer.ConsumeTraces(ctx, traces); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -289,7 +284,7 @@ func (tp *traceMetricsProcessor) collectCallMetrics(ilm pdata.InstrumentationLib
 
 		dpCalls := pdata.NewIntDataPoint()
 		mCalls.IntSum().DataPoints().Append(dpCalls)
-		dpCalls.SetStartTime(pdata.TimestampFromTime(time.Now().Add(time.Duration(-30) * time.Second)))
+		dpCalls.SetStartTimestamp(pdata.TimestampFromTime(time.Now().Add(time.Duration(-30) * time.Second)))
 		dpCalls.SetTimestamp(pdata.TimestampFromTime(time.Now()))
 		dpCalls.SetValue(callSum[key])
 		dpCalls.LabelsMap().InitFromMap(stringToMap(string(key)))
