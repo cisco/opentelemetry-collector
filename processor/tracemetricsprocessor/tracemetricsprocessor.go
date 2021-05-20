@@ -99,22 +99,13 @@ func (tp *traceMetricsProcessor) Start(_ context.Context, host component.Host) e
 	tp.logger.Info("Starting traceMetricsProcessor")
 	exporters := host.GetExporters()
 
-	var availableMetricsExporters []string
-
 	// The available list of exporters come from any configured metrics pipelines' exporters.
 	for k, exp := range exporters[config.MetricsDataType] {
 		metricsExp, ok := exp.(component.MetricsExporter)
 		if !ok {
 			return fmt.Errorf("the exporter %q isn't a metrics exporter", k.Name())
 		}
-
-		availableMetricsExporters = append(availableMetricsExporters, k.Name())
-
-		tp.logger.Debug("Looking for traceMetricsProcessor exporter from available exporters",
-			zap.String("traceMetricsProcessor-exporter", tp.config.MetricsExporter),
-			zap.Any("available-exporters", availableMetricsExporters),
-		)
-		if k.Name() == tp.config.MetricsExporter {
+		if string(k.Type()) == tp.config.MetricsExporter {
 			tp.metricsExporter = metricsExp
 			tp.logger.Info("Found exporter", zap.String("traceMetricsProcessor-exporter", tp.config.MetricsExporter))
 			break
